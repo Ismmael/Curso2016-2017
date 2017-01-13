@@ -1,0 +1,126 @@
+// Ismael Ayat Ortiz - w140334 - Ismmael
+
+
+///// 1.) How many accidents were there in Madrid in 2013?
+
+PREFIX mv: <http://example.org/myVocabulary#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+SELECT (SUM(?x) AS ?numberOfAccidents) WHERE {
+    ?obs a qb:Observation ;
+    mv:numberOfAccidents ?x .
+}
+
+// Resultado: 11749
+
+
+///// 2.) Give me the number of accidens in Usera for each type of accident
+
+PREFIX mv: <http://example.org/myVocabulary#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+SELECT ?accidentType xsd:integer(?numberAccidents) AS ?number WHERE {
+    ?obs a qb:Observation ;
+    mv:relatedDistrict "USERA";
+	mv:hasAccidentType ?accidentType ;
+	mv:numberOfAccidents ?numberAccidents
+}
+
+// Resultado:
+
+// http://example.org/myVocabulary#DoubleCollision 	204
+// http://example.org/myVocabulary#MultipleCollision 	28
+// http://example.org/myVocabulary#CollisionWithObject 	70
+// http://example.org/myVocabulary#RunOver 		59
+// http://example.org/myVocabulary#Overturn 		2
+// http://example.org/myVocabulary#MotorcycleFall 	13
+// http://example.org/myVocabulary#MopedFall 		5
+// http://example.org/myVocabulary#BicycleFall 		1
+// http://example.org/myVocabulary#BusPassengerFall 	3
+// http://example.org/myVocabulary#OtherCause 		2
+
+
+///// 3.) Give me the number of multiple collisions for each district
+
+PREFIX mv: <http://example.org/myVocabulary#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+SELECT ?x AS ?district xsd:integer(?y) AS ?collisionsNumber WHERE{
+    ?obs a qb:Observation ;
+    mv:relatedDistrict ?x ;
+    mv:hasAccidentType mv:MultipleCollision ;
+    mv:numberOfAccidents ?y .
+}
+
+// Resultado: 
+
+// BARAJAS		4
+// VICALVARO 		4
+// VILLA DE VALLECAS 	4
+// VILLAVERDE 		11
+// MORATALAZ 		14
+// SAN BLAS 		16
+// HORTALEZA 		18
+// USERA 		28
+// LATINA 		29
+// CHAMBERI 		30
+// CENTRO 		33
+// TETUAN 		35
+// PUENTE DE VALLECAS 	37
+// CARABANCHEL 		40
+// FUENCARRAL-EL PARDO 	42
+// ARGANZUELA 	 	50
+// CIUDAD LINEAL 	52
+// RETIRO 		59
+// MONCLOA-ARAVACA 	65
+// SALAMANCA 		70
+// CHAMARTIN 		82
+
+
+///// 4.) Which is the district were the number of bicycle falls was higher in 2013?
+
+PREFIX mv: <http://example.org/myVocabulary#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+SELECT ?x AS ?district xsd:integer(MAX(?y)) AS ?numberAccidents WHERE {
+    ?obs a qb:Observation ;
+    mv:relatedDistrict ?x ;
+    mv:numberOfAccidents ?y;
+    mv:hasAccidentType mv:BicycleFall .
+}
+ORDER BY DESC(?y)
+
+// En este caso se elige el primer elemento de la lista (puesto que la última línea de la query ordena los elementos en orden descendente.
+// En este caso hay tres distritos que son FUENCARRAL, MONCLOA y SAN BLAS con 13 cada uno.
+
+
+///// 5.) Give me the districts with more than 500 accidents in 2013
+
+PREFIX mv: <http://example.org/myVocabulary#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+SELECT ?x AS ?district ?y AS ?accidentNumber
+WHERE {
+{
+SELECT ?x SUM(xsd:integer(?z)) AS ?y
+WHERE
+{
+	?obs a qb:Observation ;
+	mv:relatedDistrict ?x ;
+	mv:numberOfAccidents ?z . 
+}
+}
+}
+HAVING(?y > 500)
+
+//Resultado:
+
+// TETUAN		594
+// CENTRO 		926
+// CHAMBERI 		715
+// PUENTE DE VALLECAS 	651
+// RETIRO 		593
+// SAN BLAS 		518
+// ARGANZUELA 		631
+// CHAMARTIN 		844
+// FUENCARRAL-EL PARDO 	682
+// SALAMANCA 	 	982
+// CARABANCHEL		709
+// CIUDAD LINEAL 	750
+// LATINA 		530
+// MONCLOA-ARAVACA 	702
